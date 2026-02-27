@@ -2,22 +2,26 @@
 
 import os
 
-from databricks.sdk.core import Config, credential_provider
+from databricks.sdk.core import Config, oauth_service_principal
 from databricks.sql import connect
 
 
-def get_connection():
-    """Create a Databricks SQL connection using OAuth service principal credentials."""
-    cfg = Config(
+def _credential_provider():
+    """Return an OAuth credential provider for service principal auth."""
+    config = Config(
         host=os.environ["DATABRICKS_HOST"],
         client_id=os.environ["DATABRICKS_CLIENT_ID"],
         client_secret=os.environ["DATABRICKS_CLIENT_SECRET"],
     )
+    return oauth_service_principal(config)
 
+
+def get_connection():
+    """Create a Databricks SQL connection using OAuth service principal credentials."""
     return connect(
-        server_hostname=cfg.host,
+        server_hostname=os.environ["DATABRICKS_HOST"],
         http_path=os.environ["DATABRICKS_HTTP_PATH"],
-        credentials_provider=credential_provider(cfg),
+        credentials_provider=_credential_provider,
     )
 
 
