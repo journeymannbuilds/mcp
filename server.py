@@ -1,5 +1,6 @@
 """Databricks MCP Server — exposes list_tables, describe_table, and query tools."""
 
+import os
 import re
 
 from dotenv import load_dotenv
@@ -9,7 +10,11 @@ from db import execute_query
 
 load_dotenv()
 
-mcp = FastMCP("databricks")
+mcp = FastMCP(
+    "databricks",
+    host="0.0.0.0",
+    port=int(os.environ.get("PORT", "8000")),
+)
 
 WRITE_PATTERN = re.compile(
     r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|MERGE|REPLACE|GRANT|REVOKE)\b",
@@ -53,4 +58,4 @@ def query(sql: str) -> list[dict]:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    mcp.run(transport="sse")
